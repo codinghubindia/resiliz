@@ -1,4 +1,5 @@
-# ResiliZ: Confidential Real-Time Anomaly Telemetry for Renewable Microgrids
+# [Your Team Name]_IBM Z Datathon 2026 Project
+## ResiliZ: Confidential Real-Time Anomaly Telemetry for Renewable Microgrids
 
 [![Architecture](https://img.shields.io/badge/Architecture-IBM%20s390x%20%2F%20LinuxONE-0f62fe?style=flat-square&logo=ibm)](https://www.ibm.com/it-infrastructure/linuxone)
 [![OS](https://img.shields.io/badge/OS-Red%20Hat%20Enterprise%20Linux%209.8-ee0000?style=flat-square&logo=redhat)](https://www.redhat.com/)
@@ -7,6 +8,8 @@
 [![Differential Privacy](https://img.shields.io/badge/Differential%20Privacy-%CE%B5%3D1.0%20(Laplace)-a855f7?style=flat-square)](#confidential-telemetry--cpacf-hardware-security)
 [![Crypto Accelerator](https://img.shields.io/badge/Crypto-CPACF%20SHA--256%20MSA-f59e0b?style=flat-square)](#confidential-telemetry--cpacf-hardware-security)
 [![Grid Standard](https://img.shields.io/badge/Grid%20Topology-IEEE%2033--Bus%20Radial%20(12.66kV)-64748b?style=flat-square)](#ieee-33-bus-radial-feeder-microgrid-topology)
+
+*🎬 [Watch the ResiliZ 3-Minute Demo Video Here](INSERT_YOUTUBE_OR_DRIVE_LINK)*
 
 **ResiliZ** is an industrial-grade, confidential real-time anomaly detection and autonomous protection engine engineered for **Renewable Microgrids on the IEEE 33-Bus Radial Feeder System**, executing natively on **IBM LinuxONE enterprise mainframes (`s390x`)**.
 
@@ -27,7 +30,7 @@ ResiliZ closes the dangerous latency vulnerability of legacy utility SCADA proto
 10. [REST API & WebSocket Reference](#rest-api--websocket-reference)
 11. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide)
 12. [Hardware Platform Audit](#hardware-platform-audit)
-13. [IBM LinuxONE AI/ML Lab Completion & Technical Verification Audit](#ibm-linuxone-aiml-lab-completion--technical-verification-audit)
+13. [Mandatory Prerequisites: AI/ML Labs Completion](#-mandatory-prerequisites-aiml-labs-completion)
 
 ---
 
@@ -81,6 +84,8 @@ ResiliZ classifies 6 operational microgrid states according to IEC 61850 substat
 ---
 
 ## System Architecture
+
+![ResiliZ Architecture Flowchart](./assets/architecture-flowchart.png)
 
 ```mermaid
 flowchart TB
@@ -586,16 +591,19 @@ Fault cleared. Nominal state restored.
 
 ---
 
-## IBM LinuxONE AI/ML Lab Completion & Technical Verification Audit
+## ✅ Mandatory Prerequisites: AI/ML Labs Completion
 
 > [!IMPORTANT]
-> **Lab Completion & Certificate Notice for Evaluators:**  
-> All required hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were fully executed and completed on live `s390x` hardware. Due to an automated platform validation issue on the lab environment portal, the automated PDF certificate was not generated upon completion.  
-> As formal verifiable proof of execution and lab completion, the complete code runs, training logs, confusion matrices, latency throughputs, and evaluation audits are preserved in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
-> - [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx) — Formal Execution Audit for Notebooks 1 & 2
-> - [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) — Formal Execution Audit for Notebooks 3 & 4
+> **Lab Execution & Verification Notice for Judges:**  
+> All 4 required hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were fully executed and completed on live `s390x` hardware. Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion.  
+> As formal visual and technical proof of execution, the full code runs, training curves, confusion matrices, latency benchmarks, and audit reports are embedded below and preserved in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
+> - **Registered Participant**: Manjunatha N
+> - **Associated Email**: `maxx.codinghubindia@gmail.com`
+> - **Execution Architecture**: IBM LinuxONE (`s390x` / RHEL 9.8)
+> - **Audit Artifact 1**: [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx) (Workloads 1 & 2)
+> - **Audit Artifact 2**: [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) (Workloads 3 & 4)
 
-### Enterprise Workloads Executed on IBM LinuxONE (`s390x`)
+### Enterprise Workloads Summary
 
 | Notebook & Workload | Architecture & Framework | Dataset & Scope | Key Results & Throughput | Artifact Audit Report |
 |:---|:---|:---|:---|:---:|
@@ -603,6 +611,44 @@ Fault cleared. Nominal state restored.
 | **Notebook 2: Customer Retention & Churn Prediction** | scikit-learn Random Forest & PyTorch Multi-Layer Perceptron (MLP), PMML export | 6,001 enterprise clients, 20,000 transaction records with cross-table join analysis | Customer churn probability estimation and revenue-at-risk modeling on IBM LinuxONE enterprise partitions | [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) |
 | **Notebook 3: Hybrid Loan Decisioning (Predictive + Generative AI)** | XGBoost GBTree + `llama.cpp` with IBM Granite GGUF (`-march=z16 -DGGML_ZDNN=ON -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS`) + BM25 RAG | Financial records, bank statements, pay stubs, W-2 PDF documents | Credit risk scoring: **Low Risk ($p = 0.9974$)**; Recommendation: **Approve**; Audit explanation generated with zero hallucinations | [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) |
 | **Notebook 4: High-Throughput MNIST Digit Recognition** | TensorFlow 2.18.1 / Keras Dense Network (784-128-10 with 20% dropout), ONNX export | 60,000 training images, 10,000 test images ($28 \times 28$ grayscale digits) | **95.05% Test Accuracy**; Inference throughput: **255,246 images/second** utilizing s390x SIMD vector pipelines | [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) |
+
+---
+
+### Visual Proof of Execution & Results Screens
+
+#### 1. Notebook 1: Credit-Card Fraud Detection (LSTM on s390x)
+*Figure 1: Training loss, accuracy convergence, and final-step errors per epoch:*
+![Credit-Card Fraud LSTM Training Loss & Accuracy](./assets/lab_reports/fraud_churn_img_1.png)
+
+*Figure 2: Final-timestep confusion matrices on s390x (exact true vs. predicted counts):*
+![Fraud Detection Final-Timestep Confusion Matrices](./assets/lab_reports/fraud_churn_img_2.png)
+
+*Figure 3: Precision, recall, and F1 curves for the fraud class across classification thresholds:*
+![Fraud Precision Recall and F1 Curves](./assets/lab_reports/fraud_churn_img_3.png)
+
+---
+
+#### 2. Notebook 2: Customer Retention & Churn Prediction
+*Figure 4: Portfolio worth and predicted loss distribution for top-risk enterprise client accounts:*
+![Client Churn Business Loss Distribution](./assets/lab_reports/fraud_churn_img_4.png)
+
+*Figure 5: PyTorch MLP training loss and test accuracy convergence across 300 epochs:*
+![PyTorch Churn Training Loss & Accuracy Convergence](./assets/lab_reports/fraud_churn_img_5.png)
+
+---
+
+#### 3. Notebook 3: Hybrid Predictive & Generative AI for Loan Decisioning
+*Figure 6: Loan applicant risk probability ($p = 0.9974$), bank statement verification, and automated approval directive:*
+![Loan Decisioning Risk Analysis & Granite RAG Flow](./assets/lab_reports/loan_mnist_img_1.png)
+
+---
+
+#### 4. Notebook 4: High-Throughput MNIST Digit Recognition
+*Figure 7: Deep neural network training and validation accuracy (95.05% final test accuracy):*
+![MNIST Accuracy & Loss Curves](./assets/lab_reports/loan_mnist_img_3.png)
+
+*Figure 8: High-throughput batch inference latency distribution on IBM LinuxONE (255,246 images/second):*
+![MNIST Inference Latency on IBM LinuxONE s390x](./assets/lab_reports/loan_mnist_img_4.png)
 
 ---
 
