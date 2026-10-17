@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+backend/venv/
+venv/
+env/
+.venv/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+backend.log
+frontend.log
+
+# Environment & OS files
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
+# Vite / IDE cache
+.vite/
+.vscode/
+.idea/

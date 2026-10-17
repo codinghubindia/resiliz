@@ -1,0 +1,142 @@
+{
+  "timestamp": 1792232263.9882462,
+  "architecture": "s390x",
+  "platform": "Linux 5.14.0-687.58.1.el9_8.s390x",
+  "python_version": "3.9.25",
+  "cpu_count": 3,
+  "domain": "IEEE 33-Bus Renewable Microgrid DER Anomaly Telemetry",
+  "sample_count": 10800,
+  "test_sample_count": 2700,
+  "training_time_sec": {
+    "isolation_forest": 0.045,
+    "fault_classifier": 1.131,
+    "total": 1.176
+  },
+  "evaluation_metrics": {
+    "weighted_f1": 0.966,
+    "macro_f1": 0.9672,
+    "macro_precision": 0.9668,
+    "macro_recall": 0.97,
+    "target_f1_threshold": 0.94,
+    "target_met": true
+  },
+  "inference_latency_ms": {
+    "mean": 4.355,
+    "median_p50": 4.204,
+    "p95": 4.807,
+    "p99": 6.465,
+    "min": 4.067,
+    "max": 25.938,
+    "target_sub_20ms": true
+  },
+  "per_class_metrics": {
+    "HARMONIC_DISTORTION": {
+      "precision": 0.9688,
+      "recall": 0.9954,
+      "f1_score": 0.9819,
+      "support": 437.0
+    },
+    "INVERTER_DESYNC": {
+      "precision": 0.9508,
+      "recall": 0.977,
+      "f1_score": 0.9637,
+      "support": 435.0
+    },
+    "ISLANDING_GROUND_FAULT": {
+      "precision": 0.9691,
+      "recall": 1.0,
+      "f1_score": 0.9843,
+      "support": 439.0
+    },
+    "NORMAL_50HZ": {
+      "precision": 0.9688,
+      "recall": 0.9977,
+      "f1_score": 0.9831,
+      "support": 436.0
+    },
+    "PHASE_UNBALANCE": {
+      "precision": 0.9432,
+      "recall": 0.9908,
+      "f1_score": 0.9664,
+      "support": 436.0
+    },
+    "TRANSFORMER_OVERLOAD": {
+      "precision": 1.0,
+      "recall": 0.8588,
+      "f1_score": 0.924,
+      "support": 517.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      435,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      0,
+      425,
+      0,
+      0,
+      10,
+      0
+    ],
+    [
+      0,
+      0,
+      439,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      435,
+      0,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      0,
+      432,
+      0
+    ],
+    [
+      13,
+      18,
+      14,
+      14,
+      14,
+      444
+    ]
+  ],
+  "classes": [
+    "HARMONIC_DISTORTION",
+    "INVERTER_DESYNC",
+    "ISLANDING_GROUND_FAULT",
+    "NORMAL_50HZ",
+    "PHASE_UNBALANCE",
+    "TRANSFORMER_OVERLOAD"
+  ],
+  "feature_importances": {
+    "breaker_trip_readiness_pct": 0.133,
+    "bus31_phase_drift_deg": 0.1269,
+    "grid_freq_hz": 0.1106,
+    "bus25_current_pu": 0.108,
+    "thd_inverter_bus18_pct": 0.1074,
+    "phase_unbalance_pct": 0.092,
+    "reactive_power_mvar": 0.0873,
+    "bus25_transformer_temp_c": 0.0838,
+    "bus6_voltage_pu": 0.0699,
+    "active_power_mw": 0.0515,
+    "voltage_pu_bus14": 0.0258,
+    "dp_laplace_noise_sigma": 0.0038
+  }
+}
