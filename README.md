@@ -1,4 +1,4 @@
-# [Your Team Name]_IBM Z Datathon 2026 Project
+# COMMBAT_IBM Z Datathon 2026 Project
 ## ResiliZ: Confidential Real-Time Anomaly Telemetry for Renewable Microgrids
 
 [![Architecture](https://img.shields.io/badge/Architecture-IBM%20s390x%20%2F%20LinuxONE-0f62fe?style=flat-square&logo=ibm)](https://www.ibm.com/it-infrastructure/linuxone)
@@ -600,6 +600,7 @@ Fault cleared. Nominal state restored.
 > - **Lab 2**: **Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE** ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
 >
 > Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository:
+> - **Registered Team**: COMMBAT
 > - **Registered Participant**: Manjunatha N
 > - **Associated Email**: `maxx.codinghubindia@gmail.com`
 > - **Execution Platform**: IBM LinuxONE (`s390x` / RHEL 9.8)
