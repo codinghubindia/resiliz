@@ -595,29 +595,30 @@ Fault cleared. Nominal state restored.
 
 > [!IMPORTANT]
 > **Lab Execution & Verification Notice for Judges:**  
-> All 4 required hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were fully executed and completed on live `s390x` hardware. Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion.  
-> As formal visual and technical proof of execution, the full code runs, training curves, confusion matrices, latency benchmarks, and audit reports are embedded below and preserved in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
+> The enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were executed and documented in the two official reports in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
+> - **Lab 1**: **Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE** ([`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx))
+> - **Lab 2**: **Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE** ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
+>
+> Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository:
 > - **Registered Participant**: Manjunatha N
 > - **Associated Email**: `maxx.codinghubindia@gmail.com`
-> - **Execution Architecture**: IBM LinuxONE (`s390x` / RHEL 9.8)
-> - **Audit Artifact 1**: [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx) (Workloads 1 & 2)
-> - **Audit Artifact 2**: [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) (Workloads 3 & 4)
+> - **Execution Platform**: IBM LinuxONE (`s390x` / RHEL 9.8)
 
-### Enterprise Workloads Summary
+### Enterprise AI/ML Lab Workloads Summary
 
-| Notebook & Workload | Architecture & Framework | Dataset & Scope | Key Results & Throughput | Artifact Audit Report |
-|:---|:---|:---|:---|:---:|
-| **Notebook 1: Credit-Card Fraud Detection** | TensorFlow 2.18.1 / Keras 2-layer LSTM (200 units), ONNX Runtime export on `s390x` | 245,864 transactions across 15 columns; 7-step sequence modeling per user-card pair | **99.86% Test Accuracy**; Fraud Precision: 0.67, Recall: 0.80, F1: 0.73; **9,001 sequences/second** throughput (2,000-sequence batch, median 222 ms) | [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) |
-| **Notebook 2: Customer Retention & Churn Prediction** | scikit-learn Random Forest & PyTorch Multi-Layer Perceptron (MLP), PMML export | 6,001 enterprise clients, 20,000 transaction records with cross-table join analysis | Customer churn probability estimation and revenue-at-risk modeling on IBM LinuxONE enterprise partitions | [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) |
-| **Notebook 3: Hybrid Loan Decisioning (Predictive + Generative AI)** | XGBoost GBTree + `llama.cpp` with IBM Granite GGUF (`-march=z16 -DGGML_ZDNN=ON -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS`) + BM25 RAG | Financial records, bank statements, pay stubs, W-2 PDF documents | Credit risk scoring: **Low Risk ($p = 0.9974$)**; Recommendation: **Approve**; Audit explanation generated with zero hallucinations | [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) |
-| **Notebook 4: High-Throughput MNIST Digit Recognition** | TensorFlow 2.18.1 / Keras Dense Network (784-128-10 with 20% dropout), ONNX export | 60,000 training images, 10,000 test images ($28 \times 28$ grayscale digits) | **95.05% Test Accuracy**; Inference throughput: **255,246 images/second** utilizing s390x SIMD vector pipelines | [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) |
+| Project & Audit Report | Framework | Dataset | Task | Key Results & Throughput |
+|:---|:---|:---|:---|:---|
+| **Project 1: Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE**<br>📄 [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) | **Notebook 1**: TensorFlow 2.18.1 / Keras LSTM, ONNX export<br><br>**Notebook 2**: scikit-learn Random Forest, PyTorch MLP, PMML export | **Notebook 1**: 245,864 card transactions (15 columns)<br><br>**Notebook 2**: 6,001 clients, 20,000 transactions (112 clients after join) | **Notebook 1**: Per-transaction fraud classification from a 7-step sequence<br><br>**Notebook 2**: Customer churn probability and revenue-at-risk modeling | **Notebook 1**: 99.86% test accuracy; fraud precision: 0.67, recall: 0.80, F1: 0.73 (final timestep); 9,001 sequences/s throughput (2,000-sequence batch, median 222 ms)<br><br>**Notebook 2**: PyTorch model test accuracy: 73.9% (majority-class baseline: 74.4%) |
+| **Project 2: Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE**<br>📄 [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) | **Notebook 3**: XGBoost GBTree, `llama.cpp` with IBM Granite GGUF model, BM25 retrieval<br><br>**Notebook 4**: TensorFlow 2.18.1 / Keras dense network (784-128-10 with dropout 0.2), ONNX export | **Notebook 3**: Applicant 5: loan record, bank statement, pay stub, W-2 PDFs<br><br>**Notebook 4**: 60,000 training and 10,000 test images ($28 \times 28$ grayscale digits) | **Notebook 3**: Hybrid predictive & generative loan decisioning pipeline<br><br>**Notebook 4**: High-throughput digit classification | **Notebook 3**: Low Risk ($p = 0.9974$); recommendation: Approve<br><br>**Notebook 4**: 95.05% test accuracy; Throughput: 255,246 images/s (1,000-image batch, median 3.92 ms) |
 
 ---
 
 ### Visual Proof of Execution & Results Screens
 
-#### 1. Notebook 1: Credit-Card Fraud Detection (LSTM on s390x)
-*Figure 1: Training loss, accuracy convergence, and final-step errors per epoch:*
+#### 1. Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE
+*Audit Report:* [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx)
+
+*Figure 1: Training loss and accuracy per epoch (LSTM Fraud Detection):*
 ![Credit-Card Fraud LSTM Training Loss & Accuracy](./assets/lab_reports/fraud_churn_img_1.png)
 
 *Figure 2: Final-timestep confusion matrices on s390x (exact true vs. predicted counts):*
@@ -626,28 +627,24 @@ Fault cleared. Nominal state restored.
 *Figure 3: Precision, recall, and F1 curves for the fraud class across classification thresholds:*
 ![Fraud Precision Recall and F1 Curves](./assets/lab_reports/fraud_churn_img_3.png)
 
----
-
-#### 2. Notebook 2: Customer Retention & Churn Prediction
-*Figure 4: Portfolio worth and predicted loss distribution for top-risk enterprise client accounts:*
+*Figure 4: Portfolio worth and predicted loss distribution for top-risk client accounts (Client Churn):*
 ![Client Churn Business Loss Distribution](./assets/lab_reports/fraud_churn_img_4.png)
 
-*Figure 5: PyTorch MLP training loss and test accuracy convergence across 300 epochs:*
+*Figure 5: PyTorch MLP training loss and test accuracy convergence across epochs (Client Churn):*
 ![PyTorch Churn Training Loss & Accuracy Convergence](./assets/lab_reports/fraud_churn_img_5.png)
 
 ---
 
-#### 3. Notebook 3: Hybrid Predictive & Generative AI for Loan Decisioning
-*Figure 6: Loan applicant risk probability ($p = 0.9974$), bank statement verification, and automated approval directive:*
+#### 2. Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE
+*Audit Report:* [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx)
+
+*Figure 6: Loan applicant risk probability ($p = 0.9974$) and automated recommendation output:*
 ![Loan Decisioning Risk Analysis & Granite RAG Flow](./assets/lab_reports/loan_mnist_img_1.png)
 
----
-
-#### 4. Notebook 4: High-Throughput MNIST Digit Recognition
-*Figure 7: Deep neural network training and validation accuracy (95.05% final test accuracy):*
+*Figure 7: Deep neural network training and validation accuracy across epochs (MNIST Digits):*
 ![MNIST Accuracy & Loss Curves](./assets/lab_reports/loan_mnist_img_3.png)
 
-*Figure 8: High-throughput batch inference latency distribution on IBM LinuxONE (255,246 images/second):*
+*Figure 8: Batch inference latency on IBM LinuxONE (255,246 images/second, median 3.92 ms):*
 ![MNIST Inference Latency on IBM LinuxONE s390x](./assets/lab_reports/loan_mnist_img_4.png)
 
 ---
