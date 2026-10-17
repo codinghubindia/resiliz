@@ -1,6 +1,8 @@
 # COMMBAT_IBM Z Datathon 2026 Project
 ## ResiliZ: Confidential Real-Time Anomaly Telemetry for Renewable Microgrids
 
+> 🎬 **3-Minute Pitch & Demo Video**: [**Watch the ResiliZ Live Demo on IBM LinuxONE Here**](INSERT_YOUTUBE_OR_DRIVE_LINK)
+
 [![Architecture](https://img.shields.io/badge/Architecture-IBM%20s390x%20%2F%20LinuxONE-0f62fe?style=flat-square&logo=ibm)](https://www.ibm.com/it-infrastructure/linuxone)
 [![OS](https://img.shields.io/badge/OS-Red%20Hat%20Enterprise%20Linux%209.8-ee0000?style=flat-square&logo=redhat)](https://www.redhat.com/)
 [![Macro F1-Score](https://img.shields.io/badge/Macro%20F1--Score-96.72%25%20(PASSED)-10b981?style=flat-square)](#empirical-model-evaluation--metrics)
@@ -8,8 +10,6 @@
 [![Differential Privacy](https://img.shields.io/badge/Differential%20Privacy-%CE%B5%3D1.0%20(Laplace)-a855f7?style=flat-square)](#confidential-telemetry--cpacf-hardware-security)
 [![Crypto Accelerator](https://img.shields.io/badge/Crypto-CPACF%20SHA--256%20MSA-f59e0b?style=flat-square)](#confidential-telemetry--cpacf-hardware-security)
 [![Grid Standard](https://img.shields.io/badge/Grid%20Topology-IEEE%2033--Bus%20Radial%20(12.66kV)-64748b?style=flat-square)](#ieee-33-bus-radial-feeder-microgrid-topology)
-
-*🎬 [Watch the ResiliZ 3-Minute Demo Video Here](INSERT_YOUTUBE_OR_DRIVE_LINK)*
 
 **ResiliZ** is an industrial-grade, confidential real-time anomaly detection and autonomous protection engine engineered for **Renewable Microgrids on the IEEE 33-Bus Radial Feeder System**, executing natively on **IBM LinuxONE enterprise mainframes (`s390x`)**.
 
@@ -29,8 +29,9 @@ ResiliZ closes the dangerous latency vulnerability of legacy utility SCADA proto
 9. [Industrial NOC Console (Bloomberg / Spectrum Power UI)](#industrial-noc-console-bloomberg--spectrum-power-ui)
 10. [REST API & WebSocket Reference](#rest-api--websocket-reference)
 11. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide)
-12. [Hardware Platform Audit](#hardware-platform-audit)
-13. [Mandatory Prerequisites: AI/ML Labs Completion](#-mandatory-prerequisites-aiml-labs-completion)
+12. [Hardware Platform Audit & LinuxONE Exploitation](#hardware-platform-audit--linuxone-exploitation)
+13. [IBM Z Lab Completions](#ibm-z-lab-completions)
+14. [Open-Source Resources & Attributions](#open-source-resources--attributions)
 
 ---
 
@@ -578,45 +579,52 @@ Fault cleared. Nominal state restored.
 
 ---
 
-## Hardware Platform Audit
+## Hardware Platform Audit & LinuxONE Exploitation
+
+![IBM LinuxONE s390x Native Terminal Audit](./assets/linuxone-terminal-audit.png)
 
 * **Host Hardware**: IBM LinuxONE Enterprise Server (Machine Type: 9175 / 3931)
 * **Architecture**: IBM z/Architecture (`s390x`), 64-bit Big-Endian
-* **LPAR Host Environment**: 3 Dedicated z/VM Hypervisor Cores
+* **LPAR Host Environment**: 3 Dedicated z/VM Hypervisor Cores @ 5,508 MHz
 * **CPU Facilities**: `esan3`, `zarch`, `stfle`, `msa` (CPACF), `ldisp`, `eimm`, `dfp`, `edat`, `etf3eh`, `vx` (SIMD Vector), `vxe` (Vector Enhancements)
 * **Operating System**: Red Hat Enterprise Linux 9.8 (Plow) / Linux Kernel `5.14.0-687.58.1.el9_8.s390x`
 * **C Compiler**: GCC 11.5.0 (`-march=z14 -mtune=z15 -O3`)
 * **Mathematical Acceleration**: OpenBLAS Vector SIMD Engine + SciPy LAPACK
 * **Cryptographic Co-Processor**: CPACF (CP Assist for Cryptographic Function, MSA Level 8/9) with hardware-accelerated SHA-256 and AES-GCM-256.
 
+### Mainframe Exploitation & Capability Callouts
+
+1. **CPACF Hardware Cryptography (MSA Level 8/9)**:
+   Telemetry integrity verification utilizes IBM CPACF on-chip coprocessor instructions. Packet hashes are evaluated via hardware-accelerated SHA-256 in nanoseconds per frame, preventing spoofed SCADA injection attacks without adding software latency.
+2. **Sub-50ms Stream Processing on High-Frequency Telemetry**:
+   Microgrid PMUs publish at 20Hz (50ms interval). ResiliZ evaluates dual-engine anomaly inference, differential privacy perturbation, and hash verification in **~4.20 ms**, comfortably operating at **< 10% of the 50ms Kafka stream ingestion window** and preventing any queuing backlog.
+3. **Enterprise Reliability & High Availability**:
+   Native LinuxONE deployment allows collocated execution with utility transaction databases, eliminating inter-datacenter transit hops and achieving **~5.00 ms total breaker clearing time**.
+
 ---
 
-## ✅ Mandatory Prerequisites: AI/ML Labs Completion
+## IBM Z Lab Completions
 
 > [!IMPORTANT]
-> **Lab Execution & Verification Notice for Judges:**  
-> The enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were executed and documented in the two official reports in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
-> - **Lab 1**: **Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE** ([`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx))
-> - **Lab 2**: **Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE** ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
+> **Mandatory Lab Verification Notice for Judges:**  
+> The hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were executed on native LinuxONE hardware and documented in the two official reports in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
+> - **Mandatory Lab 1: Predictive AI Hybrid AI Scenarios**: Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE ([`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx))
+> - **Mandatory Lab 2: Predictive AI + Generative AI**: Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
 >
-> Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository:
-> - **Registered Team**: COMMBAT
-> - **Registered Participant**: Manjunatha N
-> - **Associated Email**: `maxx.codinghubindia@gmail.com`
-> - **Execution Platform**: IBM LinuxONE (`s390x` / RHEL 9.8)
+> Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository.
 
 ### Enterprise AI/ML Lab Workloads Summary
 
 | Project & Audit Report | Framework | Dataset | Task | Key Results & Throughput |
 |:---|:---|:---|:---|:---|
-| **Project 1: Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE**<br>📄 [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) | **Notebook 1**: TensorFlow 2.18.1 / Keras LSTM, ONNX export<br><br>**Notebook 2**: scikit-learn Random Forest, PyTorch MLP, PMML export | **Notebook 1**: 245,864 card transactions (15 columns)<br><br>**Notebook 2**: 6,001 clients, 20,000 transactions (112 clients after join) | **Notebook 1**: Per-transaction fraud classification from a 7-step sequence<br><br>**Notebook 2**: Customer churn probability and revenue-at-risk modeling | **Notebook 1**: 99.86% test accuracy; fraud precision: 0.67, recall: 0.80, F1: 0.73 (final timestep); 9,001 sequences/s throughput (2,000-sequence batch, median 222 ms)<br><br>**Notebook 2**: PyTorch model test accuracy: 73.9% (majority-class baseline: 74.4%) |
-| **Project 2: Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE**<br>📄 [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) | **Notebook 3**: XGBoost GBTree, `llama.cpp` with IBM Granite GGUF model, BM25 retrieval<br><br>**Notebook 4**: TensorFlow 2.18.1 / Keras dense network (784-128-10 with dropout 0.2), ONNX export | **Notebook 3**: Applicant 5: loan record, bank statement, pay stub, W-2 PDFs<br><br>**Notebook 4**: 60,000 training and 10,000 test images ($28 \times 28$ grayscale digits) | **Notebook 3**: Hybrid predictive & generative loan decisioning pipeline<br><br>**Notebook 4**: High-throughput digit classification | **Notebook 3**: Low Risk ($p = 0.9974$); recommendation: Approve<br><br>**Notebook 4**: 95.05% test accuracy; Throughput: 255,246 images/s (1,000-image batch, median 3.92 ms) |
+| **Project 1: Predictive AI Hybrid AI Scenarios**<br>*(Credit-card fraud detection & client churn prediction)*<br>📄 [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) | **Notebook 1**: TensorFlow 2.18.1 / Keras LSTM, ONNX export<br><br>**Notebook 2**: scikit-learn Random Forest, PyTorch MLP, PMML export | **Notebook 1**: 245,864 card transactions (15 columns)<br><br>**Notebook 2**: 6,001 clients, 20,000 transactions (112 clients after join) | **Notebook 1**: Per-transaction fraud classification from a 7-step sequence<br><br>**Notebook 2**: Customer churn probability and revenue-at-risk modeling | **Notebook 1**: 99.86% test accuracy; fraud precision: 0.67, recall: 0.80, F1: 0.73 (final timestep); 9,001 sequences/s throughput (2,000-sequence batch, median 222 ms)<br><br>**Notebook 2**: PyTorch model test accuracy: 73.9% (majority-class baseline: 74.4%) |
+| **Project 2: Predictive AI + Generative AI**<br>*(Hybrid AI loan decisioning & MNIST recognition)*<br>📄 [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) | **Notebook 3**: XGBoost GBTree, `llama.cpp` with IBM Granite GGUF model, BM25 retrieval<br><br>**Notebook 4**: TensorFlow 2.18.1 / Keras dense network (784-128-10 with dropout 0.2), ONNX export | **Notebook 3**: Applicant 5: loan record, bank statement, pay stub, W-2 PDFs<br><br>**Notebook 4**: 60,000 training and 10,000 test images ($28 \times 28$ grayscale digits) | **Notebook 3**: Hybrid predictive & generative loan decisioning pipeline<br><br>**Notebook 4**: High-throughput digit classification | **Notebook 3**: Low Risk ($p = 0.9974$); recommendation: Approve<br><br>**Notebook 4**: 95.05% test accuracy; Throughput: 255,246 images/s (1,000-image batch, median 3.92 ms) |
 
 ---
 
 ### Visual Proof of Execution & Results Screens
 
-#### 1. Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE
+#### 1. Predictive AI Hybrid AI Scenarios (Fraud & Churn on IBM LinuxONE)
 *Audit Report:* [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx)
 
 *Figure 1: Training loss and accuracy per epoch (LSTM Fraud Detection):*
@@ -636,7 +644,7 @@ Fault cleared. Nominal state restored.
 
 ---
 
-#### 2. Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE
+#### 2. Predictive AI + Generative AI (Loan Decisioning & MNIST on IBM LinuxONE)
 *Audit Report:* [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx)
 
 *Figure 6: Loan applicant risk probability ($p = 0.9974$) and automated recommendation output:*
@@ -647,6 +655,29 @@ Fault cleared. Nominal state restored.
 
 *Figure 8: Batch inference latency on IBM LinuxONE (255,246 images/second, median 3.92 ms):*
 ![MNIST Inference Latency on IBM LinuxONE s390x](./assets/lab_reports/loan_mnist_img_4.png)
+
+---
+
+## Open-Source Resources & Attributions
+
+In strict accordance with Hack2Skill competition rules verifying originality, the following open-source frameworks, libraries, and specifications were leveraged in ResiliZ:
+
+* **Machine Learning & Anomaly Detection**:
+  * [**Scikit-Learn**](https://scikit-learn.org/) – Random Forest classifier and Isolation Forest evaluation.
+  * [**PyOD (Python Outlier Detection)**](https://pyod.readthedocs.io/) – Multivariate outlier detection models and benchmarks.
+  * [**IBM Differential Privacy Library (`diffprivlib`)**](https://github.com/IBM/differential-privacy-library) – Laplace mechanism perturbation engine ($\epsilon = 1.0$) for confidential telemetry.
+  * [**NumPy**](https://numpy.org/) & [**SciPy**](https://scipy.org/) – High-performance matrix mathematics compiled with `s390x` SIMD acceleration.
+* **Streaming & Web Engine**:
+  * [**FastAPI**](https://fastapi.tiangolo.com/) – High-throughput ASGI asynchronous web and WebSocket framework.
+  * [**Uvicorn**](https://www.uvicorn.org/) – Lightning-fast ASGI server implementation.
+  * [**Apache Kafka**](https://kafka.apache.org/) / [**Confluent Kafka Python**](https://github.com/confluentinc/confluent-kafka-python) – Distributed pub/sub streaming architecture.
+* **Industrial NOC Operator Console**:
+  * [**React 18**](https://react.dev/) – Declarative component engine for high-density 100vh monitoring.
+  * [**Vite**](https://vitejs.dev/) – Next-generation frontend tooling built on `@esbuild/linux-s390x`.
+  * [**Recharts**](https://recharts.org/) – SVG composable charting library for 20Hz telemetry waveform streaming.
+  * [**Lucide Icons**](https://lucide.dev/) – Clean, lightweight iconography for mission-critical industrial status indicators.
+* **Power Systems Domain Specification**:
+  * [**IEEE 33-Bus Radial Distribution Feeder**](https://cmte.ieee.org/pes-testfeeders/resources/) – Standardized 12.66kV test topology for renewable DER integration and islanding studies.
 
 ---
 
