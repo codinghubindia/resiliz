@@ -341,39 +341,6 @@ Every telemetry frame is cryptographically sealed using the native IBM LinuxONE 
 
 ---
 
-## Industrial NOC Console (Bloomberg / Spectrum Power UI)
-
-The frontend is strictly engineered according to **Industrial Grid Control Room / Bloomberg Terminal / Siemens Spectrum Power** design specifications:
-
-### Anti-"Vibe-Coding" Design Principles
-- **No Bubbly Cards**: Sharp hairline borders (`1px solid #1e293b`), `rounded-none` or `2px max` corners.
-- **No Neon Drop Shadows / Gradients**: Strict matte surfaces (`#090d16` canvas, `#0f172a` panels, `#131c2e` headers).
-- **Zero Emojis**: Replaced with technical `14px` `lucide-react` stroke icons.
-- **Zero Horizontal Jitter**: All numerical readouts, timestamps, voltages, and latencies use `font-mono tabular-nums` (`JetBrains Mono`).
-
-### 4-Quadrant Viewport Layout (`100vh`)
-
-1. **Top Hardware & Telemetry Ribbon (`Header.jsx`)**:
-   - `HOST: IBM LinuxONE (s390x / RHEL 9.8)`
-   - `STREAM RATE: 2,840 frames/s` (live hardware jitter)
-   - `LIVE INFERENCE: X.XX ms` (real-time nanosecond tick measurement)
-   - `CRYPTO: CPACF SHA-256 + DP (ε=1.0)`
-   - `ML BENCHMARK REPORT` launcher button.
-
-2. **Command & Feeder Injection Bar (`CommandBar.jsx`)**:
-   - Compact push-buttons: `[RESET: 50Hz NOMINAL]`, `[BUS-14: PHASE UNBALANCE]`, `[BUS-18: HARMONIC THD SPIKE]`, `[BUS-06: GROUND FAULT / ISLANDING]`, `[BUS-25: TRANSFORMER OVERLOAD]`, `[BUS-31: WIND PLL DESYNC]`.
-
-3. **Left 7 Columns**:
-   - **Interactive IEEE 33-Bus Single-Line Diagram (`GridTopologyMap.jsx`)**: Dark technical dot grid with main backbone (Bus 1 Substation $\rightarrow$ Bus 18) and orthogonal 90-degree lateral branches (`19–22`, `23–25`, `26–33`). Real-time per-bus voltages (`1.000 pu`) and breaker symbols (`[X]` closed, `[/]` open in red on fault isolation).
-   - **Real-Time 3-Phase Oscilloscope & Harmonics (`WaveformChart.jsx`)**: Tabular metrics bar (`Va`, `Vb`, `Vc`, `Freq`, `THD%`) with 50Hz sinusoidal canvas rendering (Phase A red, Phase B amber, Phase C sky) and harmonic ripple rendering during THD spikes.
-
-4. **Right 5 Columns**:
-   - **Protection Speed Race (`ScadaRaceWidget.jsx`)**: Track A (ResiliZ live rolling ms + locked clearing ms) vs. Track B (SCADA 0 to 3,000ms counter + progress bar + blind window exposure warning).
-   - **Autonomous Remediation & Breaker Dispatch Log (`DispatchLog.jsx`)**: Monospace terminal table logging UTC timestamps, bus IDs, fault classes, locked latencies, and automated breaker dispatch directives.
-   - **Confidential Telemetry & CPACF Audit (`ConfidentialTelemetryPanel.jsx`)**: Tabular view with redacted raw loads, DP anonymized loads, noise deltas, and 64-character CPACF SHA-256 proof hashes with copy actions.
-
----
-
 ## REST API & WebSocket Reference
 
 ### Endpoints Overview
