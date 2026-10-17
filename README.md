@@ -26,12 +26,12 @@ ResiliZ closes the dangerous latency vulnerability of legacy utility SCADA proto
 6. [IBM LinuxONE s390x Latency Benchmarks](#ibm-linuxone-s390x-latency-benchmarks)
 7. [SCADA vs. ResiliZ Protection Speed Race](#scada-vs-resiliz-protection-speed-race)
 8. [Confidential Telemetry & CPACF Hardware Security](#confidential-telemetry--cpacf-hardware-security)
-9. [Industrial NOC Console (Bloomberg / Spectrum Power UI)](#industrial-noc-console-bloomberg--spectrum-power-ui)
-10. [REST API & WebSocket Reference](#rest-api--websocket-reference)
-11. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide)
-12. [Hardware Platform Audit & LinuxONE Exploitation](#hardware-platform-audit--linuxone-exploitation)
-13. [IBM Z Lab Completions](#ibm-z-lab-completions)
-14. [Open-Source Resources & Attributions](#open-source-resources--attributions)
+9. [REST API & WebSocket Reference](#rest-api--websocket-reference)
+10. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide) 
+11. [Hardware Platform Audit & LinuxONE Exploitation](#hardware-platform-audit--linuxone-exploitation)
+12. [IBM Z Lab Completions](#ibm-z-lab-completions)
+13. [Open-Source Resources & Attributions](#open-source-resources--attributions)
+
 
 ---
 
