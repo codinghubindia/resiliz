@@ -19,23 +19,24 @@ ResiliZ closes the dangerous latency vulnerability of legacy utility SCADA proto
 
 ## Table of Contents
 1. [Executive Summary & Problem Statement](#executive-summary--problem-statement)
-2. [IEEE 33-Bus Radial Feeder Microgrid Topology](#ieee-33-bus-radial-feeder-microgrid-topology)
+2. [Hardware Platform Audit & LinuxONE Exploitation](#hardware-platform-audit--linuxone-exploitation)
 3. [System Architecture](#system-architecture)
-4. [Dataset & Physical Feature Specification](#dataset--physical-feature-specification)
-5. [Empirical Model Evaluation & Metrics](#empirical-model-evaluation--metrics)
-6. [IBM LinuxONE s390x Latency Benchmarks](#ibm-linuxone-s390x-latency-benchmarks)
-7. [SCADA vs. ResiliZ Protection Speed Race](#scada-vs-resiliz-protection-speed-race)
-8. [Confidential Telemetry & CPACF Hardware Security](#confidential-telemetry--cpacf-hardware-security)
-9. [REST API & WebSocket Reference](#rest-api--websocket-reference)
-10. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide) 
-11. [Hardware Platform Audit & LinuxONE Exploitation](#hardware-platform-audit--linuxone-exploitation)
-12. [IBM Z Lab Completions](#ibm-z-lab-completions)
-13. [Open-Source Resources & Attributions](#open-source-resources--attributions)
-
+4. [IBM Z Lab Completions](#ibm-z-lab-completions)
+5. [SCADA vs. ResiliZ Protection Speed Race](#scada-vs-resiliz-protection-speed-race)
+6. [Open-Source Resources & Attributions](#open-source-resources--attributions)
+7. [IEEE 33-Bus Radial Feeder Microgrid Topology](#ieee-33-bus-radial-feeder-microgrid-topology)
+8. [Dataset & Physical Feature Specification](#dataset--physical-feature-specification)
+9. [Empirical Model Evaluation & Metrics](#empirical-model-evaluation--metrics)
+10. [IBM LinuxONE s390x Latency Benchmarks](#ibm-linuxone-s390x-latency-benchmarks)
+11. [Confidential Telemetry & CPACF Hardware Security](#confidential-telemetry--cpacf-hardware-security)
+12. [REST API & WebSocket Reference](#rest-api--websocket-reference)
+13. [Deployment, Exposing & Operations Guide](#deployment-exposing--operations-guide)
 
 ---
 
 ## Executive Summary & Problem Statement
+
+**Community Value & AI for Good:** This project provides direct value to the community using AI for Good by preventing cascading microgrid blackouts, securing critical national infrastructure, and accelerating the safe transition to renewable energy sources in developing sectors.
 
 Modern microgrids integrate high penetration levels of non-synchronous inverter-based resources (Solar PV, Wind BFIG, and Battery Energy Storage Systems). Unlike traditional rotational thermal plants with high mechanical inertia, inverter-based grids exhibit low physical inertia:
 
@@ -54,33 +55,26 @@ ResiliZ eliminates the blind window through three native innovations:
 
 ---
 
-## IEEE 33-Bus Radial Feeder Microgrid Topology
+## Hardware Platform Audit & LinuxONE Exploitation
 
-The microgrid model is based on the benchmark **IEEE 33-Bus 12.66 kV Radial Distribution Feeder** with high renewable penetration:
 
-```
-[Substation 12.66kV]
-       |
-     (Bus 1) --- (Bus 2) --- (Bus 3) --- (Bus 4) --- (Bus 5) --- (Bus 6: DER Branch F1) --- ... --- (Bus 14: Solar PV) --- ... --- (Bus 18: Inverter F2)
-                                |                                         |
-                            (Lateral 1: Bus 19-22)                    (Lateral 2: Bus 23-25: Transformer)
-                                                                          |
-                                                                     (Bus 25: 500kW BESS)
-                                                                          |
-                                                                (Lateral 3: Bus 26-33: Wind Farm at Bus 31)
-```
+* **Host Hardware**: IBM LinuxONE Enterprise Server (Machine Type: 9175 / 3931)
+* **Architecture**: IBM z/Architecture (`s390x`), 64-bit Big-Endian
+* **LPAR Host Environment**: 3 Dedicated z/VM Hypervisor Cores @ 5,508 MHz
+* **CPU Facilities**: `esan3`, `zarch`, `stfle`, `msa` (CPACF), `ldisp`, `eimm`, `dfp`, `edat`, `etf3eh`, `vx` (SIMD Vector), `vxe` (Vector Enhancements)
+* **Operating System**: Red Hat Enterprise Linux 9.8 (Plow) / Linux Kernel `5.14.0-687.58.1.el9_8.s390x`
+* **C Compiler**: GCC 11.5.0 (`-march=z14 -mtune=z15 -O3`)
+* **Mathematical Acceleration**: OpenBLAS Vector SIMD Engine + SciPy LAPACK
+* **Cryptographic Co-Processor**: CPACF (CP Assist for Cryptographic Function, MSA Level 8/9) with hardware-accelerated SHA-256 and AES-GCM-256.
 
-### Monitored Operational & Fault States
-ResiliZ classifies 6 operational microgrid states according to IEC 61850 substation automation criteria:
+### Mainframe Exploitation & Capability Callouts
 
-| State Class | Grid Bus Location | Electrical Characteristics | Autonomous Remediation Action |
-|:---|:---|:---|:---|
-| **`NORMAL_50HZ`** | System Wide | $f = 50.00\text{ Hz}$, $V = 1.000\text{ p.u.}$, $\text{THD} < 2.0\%$ | Continuous 20Hz streaming monitoring; SSCB in closed nominal state. |
-| **`PHASE_UNBALANCE`** | Bus-14 (Solar PV) | Asymmetric Phase A voltage drop ($0.865\text{ p.u.}$), unbalance $> 8.5\%$ | Engage Static VAR Compensator (SVC) fast shunt; open Bus-14 tie breaker. |
-| **`HARMONIC_DISTORTION`** | Bus-18 (PV Inverter) | 5th/7th harmonic spike, inverter $\text{THD} > 14.8\%$ | Inject Active Power Filter (APF) cancellation; de-rate inverter to 60%. |
-| **`ISLANDING_GROUND_FAULT`** | Bus-6 (Lateral Feed) | Severe voltage collapse ($0.468\text{ p.u.}$), frequency plunge $< 48.5\text{ Hz}$ | Optical SSCB trip on Bus-6; disconnect islanded feeder branch 6–18. |
-| **`TRANSFORMER_OVERLOAD`** | Bus-25 (Commercial) | Thermal surge ($96.4^\circ\text{C}$), current $> 1.72\text{ p.u.}$, $P > 16.8\text{ MW}$ | Dispatch 500kW BESS peak-shaving discharge; shed Tier-2 commercial load. |
-| **`INVERTER_DESYNC`** | Bus-31 (Wind Farm) | Wind PLL phase drift $> 38.6^\circ$, frequency overshoot $50.48\text{ Hz}$ | Send IEEE 1547 re-synchronization pulse; engage fast damping resistor. |
+1. **CPACF Hardware Cryptography (MSA Level 8/9)**:
+   Telemetry integrity verification utilizes IBM CPACF on-chip coprocessor instructions. Packet hashes are evaluated via hardware-accelerated SHA-256 in nanoseconds per frame, preventing spoofed SCADA injection attacks without adding software latency.
+2. **Sub-50ms Stream Processing on High-Frequency Telemetry**:
+   Microgrid PMUs publish at 20Hz (50ms interval). ResiliZ evaluates dual-engine anomaly inference, differential privacy perturbation, and hash verification in **~4.20 ms**, comfortably operating at **< 10% of the 50ms Kafka stream ingestion window** and preventing any queuing backlog.
+3. **Enterprise Reliability & High Availability**:
+   Native LinuxONE deployment allows collocated execution with utility transaction databases, eliminating inter-datacenter transit hops and achieving **~5.00 ms total breaker clearing time**.
 
 ---
 
@@ -151,6 +145,145 @@ flowchart TB
 
 ---
 
+## IBM Z Lab Completions
+
+> [!IMPORTANT]
+> **Mandatory Lab Verification Notice for Judges:**  
+> The hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were executed on native LinuxONE hardware and documented in the two official reports in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
+> - **Mandatory Lab 1: Predictive AI Hybrid AI Scenarios**: Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE ([`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx))
+> - **Mandatory Lab 2: Predictive AI + Generative AI**: Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
+>
+> Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository.
+
+### Enterprise AI/ML Lab Workloads Summary
+
+| Project & Audit Report | Framework | Dataset | Task | Key Results & Throughput |
+|:---|:---|:---|:---|:---|
+| **Project 1: Predictive AI Hybrid AI Scenarios**<br>*(Credit-card fraud detection & client churn prediction)*<br>📄 [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) | **Notebook 1**: TensorFlow 2.18.1 / Keras LSTM, ONNX export<br><br>**Notebook 2**: scikit-learn Random Forest, PyTorch MLP, PMML export | **Notebook 1**: 245,864 card transactions (15 columns)<br><br>**Notebook 2**: 6,001 clients, 20,000 transactions (112 clients after join) | **Notebook 1**: Per-transaction fraud classification from a 7-step sequence<br><br>**Notebook 2**: Customer churn probability and revenue-at-risk modeling | **Notebook 1**: 99.86% test accuracy; fraud precision: 0.67, recall: 0.80, F1: 0.73 (final timestep); 9,001 sequences/s throughput (2,000-sequence batch, median 222 ms)<br><br>**Notebook 2**: PyTorch model test accuracy: 73.9% (majority-class baseline: 74.4%) |
+| **Project 2: Predictive AI + Generative AI**<br>*(Hybrid AI loan decisioning & MNIST recognition)*<br>📄 [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) | **Notebook 3**: XGBoost GBTree, `llama.cpp` with IBM Granite GGUF model, BM25 retrieval<br><br>**Notebook 4**: TensorFlow 2.18.1 / Keras dense network (784-128-10 with dropout 0.2), ONNX export | **Notebook 3**: Applicant 5: loan record, bank statement, pay stub, W-2 PDFs<br><br>**Notebook 4**: 60,000 training and 10,000 test images ($28 \times 28$ grayscale digits) | **Notebook 3**: Hybrid predictive & generative loan decisioning pipeline<br><br>**Notebook 4**: High-throughput digit classification | **Notebook 3**: Low Risk ($p = 0.9974$); recommendation: Approve<br><br>**Notebook 4**: 95.05% test accuracy; Throughput: 255,246 images/s (1,000-image batch, median 3.92 ms) |
+
+---
+
+### Visual Proof of Execution & Results Screens
+
+#### 1. Predictive AI Hybrid AI Scenarios (Fraud & Churn on IBM LinuxONE)
+*Audit Report:* [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx)
+
+*Figure 1: Training loss and accuracy per epoch (LSTM Fraud Detection):*
+![Credit-Card Fraud LSTM Training Loss & Accuracy](./assets/lab_reports/fraud_churn_img_1.png)
+
+*Figure 2: Final-timestep confusion matrices on s390x (exact true vs. predicted counts):*
+![Fraud Detection Final-Timestep Confusion Matrices](./assets/lab_reports/fraud_churn_img_2.png)
+
+*Figure 3: Precision, recall, and F1 curves for the fraud class across classification thresholds:*
+![Fraud Precision Recall and F1 Curves](./assets/lab_reports/fraud_churn_img_3.png)
+
+*Figure 4: Portfolio worth and predicted loss distribution for top-risk client accounts (Client Churn):*
+![Client Churn Business Loss Distribution](./assets/lab_reports/fraud_churn_img_4.png)
+
+*Figure 5: PyTorch MLP training loss and test accuracy convergence across epochs (Client Churn):*
+![PyTorch Churn Training Loss & Accuracy Convergence](./assets/lab_reports/fraud_churn_img_5.png)
+
+---
+
+#### 2. Predictive AI + Generative AI (Loan Decisioning & MNIST on IBM LinuxONE)
+*Audit Report:* [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx)
+
+*Figure 6: Loan applicant risk probability ($p = 0.9974$) and automated recommendation output:*
+![Loan Decisioning Risk Analysis & Granite RAG Flow](./assets/lab_reports/loan_mnist_img_1.png)
+
+*Figure 7: Deep neural network training and validation accuracy across epochs (MNIST Digits):*
+![MNIST Accuracy & Loss Curves](./assets/lab_reports/loan_mnist_img_3.png)
+
+*Figure 8: Batch inference latency on IBM LinuxONE (255,246 images/second, median 3.92 ms):*
+![MNIST Inference Latency on IBM LinuxONE s390x](./assets/lab_reports/loan_mnist_img_4.png)
+
+---
+
+## SCADA vs. ResiliZ Protection Speed Race
+
+The signature benchmark of ResiliZ is the **Protection Speed Race**, contrasting native IBM LinuxONE streaming protection against standard utility SCADA (`IEC 60870-5-104` / `DNP3`):
+
+```
+Time (ms)  0ms      5ms                                                            3000ms
+           |--------|-----------------------------------------------------------------|
+ResiliZ:   [INSPECT]->[SSCB TRIP: 5.00ms] ==> TRANSFORMER PROTECTED & BRANCH ISOLATED
+SCADA:     [.................... UTILITY BLIND WINDOW (EXPOSED) ....................]->[POLL: 3000ms]
+                                                                                     (Arc flash damage)
+```
+
+### Telemetry Track Comparison
+
+```
++------------------------------------------------------------------------------------+
+| TRACK A: RESILIZ ON IBM LINUXONE (s390x STREAMING)             [SUB-5MS PROTECTION]|
++------------------------------------------------------------------------------------+
+| Rolling Frame Scoring: 4.18 ms        | Fault Lock-In & Clearance: 5.27 ms         |
+| [✓] TRANSFORMER SAVED (2,994.7 ms AHEAD OF SCADA) • SSCB Optical Trip: 0.80 ms      |
++------------------------------------------------------------------------------------+
+| TRACK B: LEGACY SCADA (3,000ms POLLING WINDOW)                [BLIND TO TRANSIENT] |
++------------------------------------------------------------------------------------+
+| 1,420 / 3,000 ms elapsed in SCADA polling cycle                                    |
+| [████████████████████████████░░░░░░░░░░░░░░░░░░░░░░] (47.3% elapsed)               |
+| [!] BLIND WINDOW: AWAITING NEXT RTU POLL (EQUIPMENT EXPOSED FOR 1.42s)             |
++------------------------------------------------------------------------------------+
+```
+
+---
+
+## Open-Source Resources & Attributions
+
+In strict accordance with Hack2Skill competition rules verifying originality, the following open-source frameworks, libraries, and specifications were leveraged in ResiliZ:
+
+* **Machine Learning & Anomaly Detection**:
+  * [**Scikit-Learn**](https://scikit-learn.org/) – Random Forest classifier and Isolation Forest evaluation.
+  * [**PyOD (Python Outlier Detection)**](https://pyod.readthedocs.io/) – Multivariate outlier detection models and benchmarks.
+  * [**IBM Differential Privacy Library (`diffprivlib`)**](https://github.com/IBM/differential-privacy-library) – Laplace mechanism perturbation engine ($\epsilon = 1.0$) for confidential telemetry.
+  * [**NumPy**](https://numpy.org/) & [**SciPy**](https://scipy.org/) – High-performance matrix mathematics compiled with `s390x` SIMD acceleration.
+* **Streaming & Web Engine**:
+  * [**FastAPI**](https://fastapi.tiangolo.com/) – High-throughput ASGI asynchronous web and WebSocket framework.
+  * [**Uvicorn**](https://www.uvicorn.org/) – Lightning-fast ASGI server implementation.
+  * [**Apache Kafka**](https://kafka.apache.org/) / [**Confluent Kafka Python**](https://github.com/confluentinc/confluent-kafka-python) – Distributed pub/sub streaming architecture.
+* **Industrial NOC Operator Console**:
+  * [**React 18**](https://react.dev/) – Declarative component engine for high-density 100vh monitoring.
+  * [**Vite**](https://vitejs.dev/) – Next-generation frontend tooling built on `@esbuild/linux-s390x`.
+  * [**Recharts**](https://recharts.org/) – SVG composable charting library for 20Hz telemetry waveform streaming.
+  * [**Lucide Icons**](https://lucide.dev/) – Clean, lightweight iconography for mission-critical industrial status indicators.
+* **Power Systems Domain Specification**:
+  * [**IEEE 33-Bus Radial Distribution Feeder**](https://cmte.ieee.org/pes-testfeeders/resources/) – Standardized 12.66kV test topology for renewable DER integration and islanding studies.
+
+---
+
+## IEEE 33-Bus Radial Feeder Microgrid Topology
+
+The microgrid model is based on the benchmark **IEEE 33-Bus 12.66 kV Radial Distribution Feeder** with high renewable penetration:
+
+```
+[Substation 12.66kV]
+       |
+     (Bus 1) --- (Bus 2) --- (Bus 3) --- (Bus 4) --- (Bus 5) --- (Bus 6: DER Branch F1) --- ... --- (Bus 14: Solar PV) --- ... --- (Bus 18: Inverter F2)
+                                |                                         |
+                            (Lateral 1: Bus 19-22)                    (Lateral 2: Bus 23-25: Transformer)
+                                                                          |
+                                                                     (Bus 25: 500kW BESS)
+                                                                          |
+                                                                (Lateral 3: Bus 26-33: Wind Farm at Bus 31)
+```
+
+### Monitored Operational & Fault States
+ResiliZ classifies 6 operational microgrid states according to IEC 61850 substation automation criteria:
+
+| State Class | Grid Bus Location | Electrical Characteristics | Autonomous Remediation Action |
+|:---|:---|:---|:---|
+| **`NORMAL_50HZ`** | System Wide | $f = 50.00\text{ Hz}$, $V = 1.000\text{ p.u.}$, $\text{THD} < 2.0\%$ | Continuous 20Hz streaming monitoring; SSCB in closed nominal state. |
+| **`PHASE_UNBALANCE`** | Bus-14 (Solar PV) | Asymmetric Phase A voltage drop ($0.865\text{ p.u.}$), unbalance $> 8.5\%$ | Engage Static VAR Compensator (SVC) fast shunt; open Bus-14 tie breaker. |
+| **`HARMONIC_DISTORTION`** | Bus-18 (PV Inverter) | 5th/7th harmonic spike, inverter $\text{THD} > 14.8\%$ | Inject Active Power Filter (APF) cancellation; de-rate inverter to 60%. |
+| **`ISLANDING_GROUND_FAULT`** | Bus-6 (Lateral Feed) | Severe voltage collapse ($0.468\text{ p.u.}$), frequency plunge $< 48.5\text{ Hz}$ | Optical SSCB trip on Bus-6; disconnect islanded feeder branch 6–18. |
+| **`TRANSFORMER_OVERLOAD`** | Bus-25 (Commercial) | Thermal surge ($96.4^\circ\text{C}$), current $> 1.72\text{ p.u.}$, $P > 16.8\text{ MW}$ | Dispatch 500kW BESS peak-shaving discharge; shed Tier-2 commercial load. |
+| **`INVERTER_DESYNC`** | Bus-31 (Wind Farm) | Wind PLL phase drift $> 38.6^\circ$, frequency overshoot $50.48\text{ Hz}$ | Send IEEE 1547 re-synchronization pulse; engage fast damping resistor. |
+
+---
+
 ## Dataset & Physical Feature Specification
 
 ### Benchmark Dataset Provenance & Direct Download Links
@@ -203,6 +336,9 @@ flowchart TB
 
 ### Feature Importances (Random Forest Gini Impurity)
 
+<details>
+<summary>View Feature Importances</summary>
+
 ```
 breaker_trip_readiness_pct  ████████████████ (13.30%)
 bus31_phase_drift_deg       ███████████████  (12.69%)
@@ -217,6 +353,8 @@ active_power_mw             ██████           (5.15%)
 voltage_pu_bus14            ███              (2.58%)
 dp_laplace_noise_sigma      ▌                (0.38%)
 ```
+
+</details>
 
 ---
 
@@ -249,6 +387,9 @@ The machine learning engine was trained natively on IBM LinuxONE (`s390x`) under
 
 ### Confusion Matrix (2,700 Test Samples)
 
+<details>
+<summary>View Confusion Matrix</summary>
+
 $$\begin{pmatrix}
  & \text{HD} & \text{DESYNC} & \text{ISLAND} & \text{NORM} & \text{UNBAL} & \text{XFMR} \\
 \text{HD} & \mathbf{435} & 0 & 0 & 0 & 2 & 0 \\
@@ -258,6 +399,8 @@ $$\begin{pmatrix}
 \text{UNBAL} & 0 & 4 & 0 & 0 & \mathbf{432} & 0 \\
 \text{XFMR} & 13 & 18 & 14 & 14 & 14 & \mathbf{444}
 \end{pmatrix}$$
+
+</details>
 
 ---
 
@@ -283,37 +426,6 @@ $$T_{\text{clear}} = T_{\text{infer}} + T_{\text{sscb}} = 4.20\text{ ms} + 0.80\
 
 - **$T_{\text{infer}}$**: s390x Machine Learning Feature Normalization + Isolation Forest + Random Forest scoring ($4.20\text{ ms}$).
 - **$T_{\text{sscb}}$**: Solid-State Circuit Breaker optical gate trigger & thyristor conduction interrupt ($0.80\text{ ms}$).
-
----
-
-## SCADA vs. ResiliZ Protection Speed Race
-
-The signature benchmark of ResiliZ is the **Protection Speed Race**, contrasting native IBM LinuxONE streaming protection against standard utility SCADA (`IEC 60870-5-104` / `DNP3`):
-
-```
-Time (ms)  0ms      5ms                                                            3000ms
-           |--------|-----------------------------------------------------------------|
-ResiliZ:   [INSPECT]->[SSCB TRIP: 5.00ms] ==> TRANSFORMER PROTECTED & BRANCH ISOLATED
-SCADA:     [.................... UTILITY BLIND WINDOW (EXPOSED) ....................]->[POLL: 3000ms]
-                                                                                     (Arc flash damage)
-```
-
-### Telemetry Track Comparison
-
-```
-+------------------------------------------------------------------------------------+
-| TRACK A: RESILIZ ON IBM LINUXONE (s390x STREAMING)             [SUB-5MS PROTECTION]|
-+------------------------------------------------------------------------------------+
-| Rolling Frame Scoring: 4.18 ms        | Fault Lock-In & Clearance: 5.27 ms         |
-| [✓] TRANSFORMER SAVED (2,994.7 ms AHEAD OF SCADA) • SSCB Optical Trip: 0.80 ms      |
-+------------------------------------------------------------------------------------+
-| TRACK B: LEGACY SCADA (3,000ms POLLING WINDOW)                [BLIND TO TRANSIENT] |
-+------------------------------------------------------------------------------------+
-| 1,420 / 3,000 ms elapsed in SCADA polling cycle                                    |
-| [████████████████████████████░░░░░░░░░░░░░░░░░░░░░░] (47.3% elapsed)               |
-| [!] BLIND WINDOW: AWAITING NEXT RTU POLL (EQUIPMENT EXPOSED FOR 1.42s)             |
-+------------------------------------------------------------------------------------+
-```
 
 ---
 
@@ -543,108 +655,6 @@ ResiliZ Locked ms: 4.18 ms
 SCADA Ahead ms: 2995.0 ms
 Fault cleared. Nominal state restored.
 ```
-
----
-
-## Hardware Platform Audit & LinuxONE Exploitation
-
-![IBM LinuxONE s390x Native Terminal Audit](./assets/linuxone-terminal-audit.png)
-
-* **Host Hardware**: IBM LinuxONE Enterprise Server (Machine Type: 9175 / 3931)
-* **Architecture**: IBM z/Architecture (`s390x`), 64-bit Big-Endian
-* **LPAR Host Environment**: 3 Dedicated z/VM Hypervisor Cores @ 5,508 MHz
-* **CPU Facilities**: `esan3`, `zarch`, `stfle`, `msa` (CPACF), `ldisp`, `eimm`, `dfp`, `edat`, `etf3eh`, `vx` (SIMD Vector), `vxe` (Vector Enhancements)
-* **Operating System**: Red Hat Enterprise Linux 9.8 (Plow) / Linux Kernel `5.14.0-687.58.1.el9_8.s390x`
-* **C Compiler**: GCC 11.5.0 (`-march=z14 -mtune=z15 -O3`)
-* **Mathematical Acceleration**: OpenBLAS Vector SIMD Engine + SciPy LAPACK
-* **Cryptographic Co-Processor**: CPACF (CP Assist for Cryptographic Function, MSA Level 8/9) with hardware-accelerated SHA-256 and AES-GCM-256.
-
-### Mainframe Exploitation & Capability Callouts
-
-1. **CPACF Hardware Cryptography (MSA Level 8/9)**:
-   Telemetry integrity verification utilizes IBM CPACF on-chip coprocessor instructions. Packet hashes are evaluated via hardware-accelerated SHA-256 in nanoseconds per frame, preventing spoofed SCADA injection attacks without adding software latency.
-2. **Sub-50ms Stream Processing on High-Frequency Telemetry**:
-   Microgrid PMUs publish at 20Hz (50ms interval). ResiliZ evaluates dual-engine anomaly inference, differential privacy perturbation, and hash verification in **~4.20 ms**, comfortably operating at **< 10% of the 50ms Kafka stream ingestion window** and preventing any queuing backlog.
-3. **Enterprise Reliability & High Availability**:
-   Native LinuxONE deployment allows collocated execution with utility transaction databases, eliminating inter-datacenter transit hops and achieving **~5.00 ms total breaker clearing time**.
-
----
-
-## IBM Z Lab Completions
-
-> [!IMPORTANT]
-> **Mandatory Lab Verification Notice for Judges:**  
-> The hands-on enterprise AI/ML lab workloads for the **IBM LinuxONE / IBM Z** track were executed on native LinuxONE hardware and documented in the two official reports in the repository's [`AIML Lab/`](./AIML%20Lab/) directory:
-> - **Mandatory Lab 1: Predictive AI Hybrid AI Scenarios**: Credit-card fraud detection (LSTM) and client churn prediction on IBM LinuxONE ([`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx))
-> - **Mandatory Lab 2: Predictive AI + Generative AI**: Hybrid AI loan decisioning (XGBoost + Granite RAG) and MNIST digit recognition on IBM LinuxONE ([`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx))
->
-> Due to a known automated platform validation timeout on the lab portal, the automated PDF certificate was not generated upon completion. As formal technical and visual proof of execution, the full code runs, training logs, evaluation metrics, and figures are documented below and preserved directly in the repository.
-
-### Enterprise AI/ML Lab Workloads Summary
-
-| Project & Audit Report | Framework | Dataset | Task | Key Results & Throughput |
-|:---|:---|:---|:---|:---|
-| **Project 1: Predictive AI Hybrid AI Scenarios**<br>*(Credit-card fraud detection & client churn prediction)*<br>📄 [`Notebook_Execution_Report.docx`](./AIML%20Lab/Notebook_Execution_Report.docx) | **Notebook 1**: TensorFlow 2.18.1 / Keras LSTM, ONNX export<br><br>**Notebook 2**: scikit-learn Random Forest, PyTorch MLP, PMML export | **Notebook 1**: 245,864 card transactions (15 columns)<br><br>**Notebook 2**: 6,001 clients, 20,000 transactions (112 clients after join) | **Notebook 1**: Per-transaction fraud classification from a 7-step sequence<br><br>**Notebook 2**: Customer churn probability and revenue-at-risk modeling | **Notebook 1**: 99.86% test accuracy; fraud precision: 0.67, recall: 0.80, F1: 0.73 (final timestep); 9,001 sequences/s throughput (2,000-sequence batch, median 222 ms)<br><br>**Notebook 2**: PyTorch model test accuracy: 73.9% (majority-class baseline: 74.4%) |
-| **Project 2: Predictive AI + Generative AI**<br>*(Hybrid AI loan decisioning & MNIST recognition)*<br>📄 [`Notebook_Execution_Report_Loan_MNIST.docx`](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx) | **Notebook 3**: XGBoost GBTree, `llama.cpp` with IBM Granite GGUF model, BM25 retrieval<br><br>**Notebook 4**: TensorFlow 2.18.1 / Keras dense network (784-128-10 with dropout 0.2), ONNX export | **Notebook 3**: Applicant 5: loan record, bank statement, pay stub, W-2 PDFs<br><br>**Notebook 4**: 60,000 training and 10,000 test images ($28 \times 28$ grayscale digits) | **Notebook 3**: Hybrid predictive & generative loan decisioning pipeline<br><br>**Notebook 4**: High-throughput digit classification | **Notebook 3**: Low Risk ($p = 0.9974$); recommendation: Approve<br><br>**Notebook 4**: 95.05% test accuracy; Throughput: 255,246 images/s (1,000-image batch, median 3.92 ms) |
-
----
-
-### Visual Proof of Execution & Results Screens
-
-#### 1. Predictive AI Hybrid AI Scenarios (Fraud & Churn on IBM LinuxONE)
-*Audit Report:* [**`AIML Lab/Notebook_Execution_Report.docx`**](./AIML%20Lab/Notebook_Execution_Report.docx)
-
-*Figure 1: Training loss and accuracy per epoch (LSTM Fraud Detection):*
-![Credit-Card Fraud LSTM Training Loss & Accuracy](./assets/lab_reports/fraud_churn_img_1.png)
-
-*Figure 2: Final-timestep confusion matrices on s390x (exact true vs. predicted counts):*
-![Fraud Detection Final-Timestep Confusion Matrices](./assets/lab_reports/fraud_churn_img_2.png)
-
-*Figure 3: Precision, recall, and F1 curves for the fraud class across classification thresholds:*
-![Fraud Precision Recall and F1 Curves](./assets/lab_reports/fraud_churn_img_3.png)
-
-*Figure 4: Portfolio worth and predicted loss distribution for top-risk client accounts (Client Churn):*
-![Client Churn Business Loss Distribution](./assets/lab_reports/fraud_churn_img_4.png)
-
-*Figure 5: PyTorch MLP training loss and test accuracy convergence across epochs (Client Churn):*
-![PyTorch Churn Training Loss & Accuracy Convergence](./assets/lab_reports/fraud_churn_img_5.png)
-
----
-
-#### 2. Predictive AI + Generative AI (Loan Decisioning & MNIST on IBM LinuxONE)
-*Audit Report:* [**`AIML Lab/Notebook_Execution_Report_Loan_MNIST.docx`**](./AIML%20Lab/Notebook_Execution_Report_Loan_MNIST.docx)
-
-*Figure 6: Loan applicant risk probability ($p = 0.9974$) and automated recommendation output:*
-![Loan Decisioning Risk Analysis & Granite RAG Flow](./assets/lab_reports/loan_mnist_img_1.png)
-
-*Figure 7: Deep neural network training and validation accuracy across epochs (MNIST Digits):*
-![MNIST Accuracy & Loss Curves](./assets/lab_reports/loan_mnist_img_3.png)
-
-*Figure 8: Batch inference latency on IBM LinuxONE (255,246 images/second, median 3.92 ms):*
-![MNIST Inference Latency on IBM LinuxONE s390x](./assets/lab_reports/loan_mnist_img_4.png)
-
----
-
-## Open-Source Resources & Attributions
-
-In strict accordance with Hack2Skill competition rules verifying originality, the following open-source frameworks, libraries, and specifications were leveraged in ResiliZ:
-
-* **Machine Learning & Anomaly Detection**:
-  * [**Scikit-Learn**](https://scikit-learn.org/) – Random Forest classifier and Isolation Forest evaluation.
-  * [**PyOD (Python Outlier Detection)**](https://pyod.readthedocs.io/) – Multivariate outlier detection models and benchmarks.
-  * [**IBM Differential Privacy Library (`diffprivlib`)**](https://github.com/IBM/differential-privacy-library) – Laplace mechanism perturbation engine ($\epsilon = 1.0$) for confidential telemetry.
-  * [**NumPy**](https://numpy.org/) & [**SciPy**](https://scipy.org/) – High-performance matrix mathematics compiled with `s390x` SIMD acceleration.
-* **Streaming & Web Engine**:
-  * [**FastAPI**](https://fastapi.tiangolo.com/) – High-throughput ASGI asynchronous web and WebSocket framework.
-  * [**Uvicorn**](https://www.uvicorn.org/) – Lightning-fast ASGI server implementation.
-  * [**Apache Kafka**](https://kafka.apache.org/) / [**Confluent Kafka Python**](https://github.com/confluentinc/confluent-kafka-python) – Distributed pub/sub streaming architecture.
-* **Industrial NOC Operator Console**:
-  * [**React 18**](https://react.dev/) – Declarative component engine for high-density 100vh monitoring.
-  * [**Vite**](https://vitejs.dev/) – Next-generation frontend tooling built on `@esbuild/linux-s390x`.
-  * [**Recharts**](https://recharts.org/) – SVG composable charting library for 20Hz telemetry waveform streaming.
-  * [**Lucide Icons**](https://lucide.dev/) – Clean, lightweight iconography for mission-critical industrial status indicators.
-* **Power Systems Domain Specification**:
-  * [**IEEE 33-Bus Radial Distribution Feeder**](https://cmte.ieee.org/pes-testfeeders/resources/) – Standardized 12.66kV test topology for renewable DER integration and islanding studies.
 
 ---
 
