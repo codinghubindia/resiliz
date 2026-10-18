@@ -1,7 +1,7 @@
 # COMMBAT_IBM Z Datathon 2026 Project
 ## ResiliZ: Confidential Real-Time Anomaly Telemetry for Renewable Microgrids
 
-> 🎬 **3-Minute Pitch & Demo Video**: [**Watch the ResiliZ Live Demo on IBM LinuxONE Here**](INSERT_YOUTUBE_OR_DRIVE_LINK)
+> 🎬 **3-Minute Pitch & Demo Video**: [**Watch the ResiliZ Live Demo on IBM LinuxONE Here**](https://drive.google.com/file/d/1YIzsPkuvPKlF--IFUtV_n1E5mqmbG4QX/view?usp=drive_link)
 
 [![Architecture](https://img.shields.io/badge/Architecture-IBM%20s390x%20%2F%20LinuxONE-0f62fe?style=flat-square&logo=ibm)](https://www.ibm.com/it-infrastructure/linuxone)
 [![OS](https://img.shields.io/badge/OS-Red%20Hat%20Enterprise%20Linux%209.8-ee0000?style=flat-square&logo=redhat)](https://www.redhat.com/)
